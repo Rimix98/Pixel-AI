@@ -269,110 +269,6 @@ export default function ChatConversationPage({ params }: { params: Promise<{ id:
   const tier = (user?.subscription_tier || "free") as string;
   const tierLabel = tier === "max" ? "Max" : tier === "pro" ? "Pro" : "Free";
 
-  const inputBar = (
-    <form onSubmit={handleSubmit}>
-      <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-3 md:p-4">
-        {imagePreview && (
-          <div className="relative mb-2 inline-block">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="max-h-32 rounded-lg border border-[var(--border)]"
-            />
-            <button
-              type="button"
-              onClick={() => setImagePreview(null)}
-              className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 transition-colors cursor-pointer"
-            >
-              <X size={12} />
-            </button>
-          </div>
-        )}
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={imagePreview ? "Опишите изображение..." : "Чем могу помочь?"}
-          disabled={isLoading}
-          className="w-full bg-transparent text-[var(--text-primary)] placeholder-[var(--text-muted)] resize-none outline-none text-base md:text-lg min-h-[40px] md:min-h-[50px]"
-          rows={1}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSubmit(e);
-            }
-          }}
-        />
-        <div className="flex items-center justify-between mt-2 md:mt-3">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-            title="Загрузить изображение (бета)"
-          >
-            +
-          </button>
-          <div className="flex items-center gap-1 md:gap-2">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowModelDropdown(!showModelDropdown)}
-                className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1.5 rounded-lg text-[10px] md:text-xs text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-              >
-                {modelName}
-                <ChevronDown size={12} />
-              </button>
-              {showModelDropdown && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowModelDropdown(false)} />
-                  <div className="absolute bottom-full right-0 mb-1 w-48 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl shadow-lg overflow-hidden z-50">
-                    {modelOptions.map(({ name, minTier }) => {
-                      const allowed = canUseModel(tier, minTier);
-                      return (
-                        <button
-                          key={name}
-                          type="button"
-                          disabled={!allowed}
-                          onClick={() => {
-                            if (!allowed) return;
-                            setModelName(name);
-                            setShowModelDropdown(false);
-                          }}
-                          className={`w-full px-4 py-2.5 text-left text-xs flex items-center gap-2 transition-colors ${
-                            !allowed
-                              ? "text-[var(--text-muted)] cursor-not-allowed opacity-50"
-                              : modelName === name
-                              ? "bg-[var(--accent)]/10 text-[var(--accent)] cursor-pointer"
-                              : "text-[var(--text-primary)] hover:bg-[var(--border)] cursor-pointer"
-                          }`}
-                        >
-                          {name}
-                          {!allowed && <Lock size={12} className="ml-auto" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-            <button
-              type="button"
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-            >
-              <Mic size={20} />
-            </button>
-            <button
-              type="button"
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-            >
-              <AudioLines size={20} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </form>
-  );
-
   return (
     <div className="flex flex-col h-full bg-[var(--bg-main)]">
       {tier !== "max" && (
@@ -423,10 +319,6 @@ export default function ChatConversationPage({ params }: { params: Promise<{ id:
                 suppressHydrationWarning
               />
               <h1 className="text-2xl md:text-4xl font-light text-[var(--text-primary)]">{mounted ? greeting : "\u00A0"}</h1>
-            </div>
-
-            <div className="w-full max-w-2xl mb-4">
-              {inputBar}
             </div>
 
             <div className="flex flex-wrap gap-2 justify-center">
@@ -504,12 +396,10 @@ export default function ChatConversationPage({ params }: { params: Promise<{ id:
         <div ref={messagesEndRef} />
       </div>
 
-      {hasAssistantReply && (
-        <form
-          onSubmit={handleSubmit}
-          className="px-3 md:px-4 pb-3 md:pb-4"
-        >
-          <div className="max-w-3xl mx-auto bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-3 md:p-4 mb-16 md:mb-0">
+      {/* Input - sticky at bottom on mobile */}
+      <div className="sticky bottom-0 px-3 md:px-4 pb-3 md:pb-4 pt-2 bg-[var(--bg-main)] md:bg-transparent z-10">
+        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+          <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-3 md:p-4 mb-16 md:mb-0">
             {imagePreview && (
               <div className="relative mb-2 inline-block">
                 <img
@@ -620,7 +510,7 @@ export default function ChatConversationPage({ params }: { params: Promise<{ id:
             </div>
           </div>
         </form>
-      )}
+      </div>
     </div>
   );
 }

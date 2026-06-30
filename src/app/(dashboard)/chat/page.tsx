@@ -100,7 +100,7 @@ export default function ChatPage() {
       />
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-4 pb-20 md:pb-0">
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-4 pb-24 md:pb-0">
         {/* Greeting */}
         <div className="mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
@@ -111,8 +111,27 @@ export default function ChatPage() {
           </h1>
         </div>
 
-        {/* Input */}
-        <div className="w-full max-w-2xl mb-6">
+        {/* Suggestion chips */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {suggestions.map(({ icon: Icon, label, prompt }) => (
+            <button
+              key={label}
+              onClick={() => {
+                setInput(prompt);
+                inputRef.current?.focus();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-surface)]/50 border border-[var(--border)] text-xs text-[var(--text-primary)] hover:bg-[var(--border)] transition-all cursor-pointer"
+            >
+              <Icon size={14} className="text-[var(--accent)]" />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Input - fixed at bottom on mobile */}
+      <div className="sticky bottom-0 md:static px-4 pb-4 pt-2 bg-[var(--bg-main)] md:bg-transparent z-10">
+        <div className="w-full max-w-2xl mx-auto">
           <form onSubmit={handleSubmit}>
             <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-3 md:p-4">
               {imagePreview && (
@@ -210,23 +229,6 @@ export default function ChatPage() {
               </div>
             </div>
           </form>
-        </div>
-
-        {/* Suggestion chips */}
-        <div className="flex flex-wrap gap-2 justify-center">
-          {suggestions.map(({ icon: Icon, label, prompt }) => (
-            <button
-              key={label}
-              onClick={() => {
-                setInput(prompt);
-                inputRef.current?.focus();
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-surface)]/50 border border-[var(--border)] text-xs text-[var(--text-primary)] hover:bg-[var(--border)] transition-all cursor-pointer"
-            >
-              <Icon size={14} className="text-[var(--accent)]" />
-              {label}
-            </button>
-          ))}
         </div>
       </div>
     </div>
