@@ -15,7 +15,7 @@ const PLANS = {
 };
 
 const ALLOWED_MODELS: Record<string, string> = {
-  free: "gemma3:27b",
+  free: "gemma4:31b-cloud",
   pro: "qwen3-coder-next",
   max: "nemotron-3-super",
 };
