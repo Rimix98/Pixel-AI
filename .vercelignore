@@ -1,0 +1,10 @@
+node_modules
+.next
+.turbo
+*.db
+*.db-shm
+*.db-wal
+*.exe
+ton-payments
+supabase
+.git
