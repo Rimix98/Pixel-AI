@@ -469,50 +469,49 @@ Reply in the same language as the user.`;
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Empty State */}
-          {messages.length === 0 && !html ? (
-            <div className="flex-1 flex flex-col items-center justify-center bg-[#0d1117] px-4">
-              <div className="w-16 h-16 rounded-2xl bg-[#7c3aed]/10 flex items-center justify-center mb-6">
-                <Sparkles size={32} className="text-[#7c3aed]" />
-              </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 text-center">
-                Что сегодня будем дизайнить?
-              </h1>
-              <p className="text-gray-400 text-sm mb-8 text-center max-w-md">
-                Опишите сайт, лендинг или приложение — AI создаст готовый дизайн
-              </p>
+        {messages.length === 0 && !html ? (
+          <div className="flex-1 flex flex-col items-center justify-center bg-[#0d1117] px-4">
+            <div className="w-16 h-16 rounded-2xl bg-[#7c3aed]/10 flex items-center justify-center mb-6">
+              <Sparkles size={32} className="text-[#7c3aed]" />
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 text-center">
+              Что сегодня будем дизайнить?
+            </h1>
+            <p className="text-gray-400 text-sm mb-8 text-center max-w-md">
+              Опишите сайт, лендинг или приложение — AI создаст готовый дизайн
+            </p>
 
-              <div className="w-full max-w-2xl">
-                <div className="relative">
-                  <textarea
-                    ref={inputRef}
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSend();
-                      }
-                    }}
-                    placeholder="Спросите что угодно..."
-                    rows={3}
-                    disabled={loading}
-                    className="w-full bg-gray-800/50 rounded-2xl border border-gray-700 px-5 py-4 text-sm text-white placeholder-gray-500 outline-none focus:border-[#7c3aed] transition-colors resize-none"
-                  />
-                  <div className="absolute bottom-3 right-3">
-                    <button
-                      onClick={handleSend}
-                      disabled={loading || !prompt.trim()}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-[#7c3aed] text-white hover:bg-[#6d28d9] transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                      {loading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                    </button>
-                  </div>
+            <div className="w-full max-w-2xl">
+              <div className="relative">
+                <textarea
+                  ref={inputRef}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  placeholder="Спросите что угодно..."
+                  rows={3}
+                  disabled={loading}
+                  className="w-full bg-gray-800/50 rounded-2xl border border-gray-700 px-5 py-4 text-sm text-white placeholder-gray-500 outline-none focus:border-[#7c3aed] transition-colors resize-none"
+                />
+                <div className="absolute bottom-3 right-3">
+                  <button
+                    onClick={handleSend}
+                    disabled={loading || !prompt.trim()}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-[#7c3aed] text-white hover:bg-[#6d28d9] transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                  </button>
                 </div>
               </div>
             </div>
-          ) : (
+          </div>
+        ) : (
+          <div className="flex-1 flex overflow-hidden">
             <>
               {/* Chat Panel */}
               {!fullscreen && (
@@ -605,8 +604,8 @@ Reply in the same language as the user.`;
                 )}
               </div>
             </>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
