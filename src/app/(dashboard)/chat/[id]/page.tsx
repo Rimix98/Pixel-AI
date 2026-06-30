@@ -117,20 +117,6 @@ export default function ChatConversationPage({ params }: { params: Promise<{ id:
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    if (pendingAutoSubmit.current && (input.trim() || imagePreview) && !isLoading && !conversationNotFound.current) {
-      pendingAutoSubmit.current = false;
-      setTimeout(() => {
-        const form = document.querySelector("form");
-        if (form) {
-          form.requestSubmit();
-        } else {
-          handleSubmit({ preventDefault: () => {} } as React.FormEvent);
-        }
-      }, 100);
-    }
-  }, [input, imagePreview, isLoading]);
-
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -266,6 +252,18 @@ export default function ChatConversationPage({ params }: { params: Promise<{ id:
       inputRef.current?.focus();
     }
   };
+
+  const handleSubmitRef = useRef(handleSubmit);
+  handleSubmitRef.current = handleSubmit;
+
+  useEffect(() => {
+    if (pendingAutoSubmit.current && (input.trim() || imagePreview) && !isLoading && !conversationNotFound.current) {
+      pendingAutoSubmit.current = false;
+      setTimeout(() => {
+        handleSubmitRef.current({ preventDefault: () => {} } as React.FormEvent);
+      }, 150);
+    }
+  }, [input, imagePreview, isLoading]);
 
   const copyMessage = (content: string) => {
     navigator.clipboard.writeText(content);
