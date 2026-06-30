@@ -30,6 +30,7 @@ export const POST = (request: Request) =>
     const db = getDb();
 
     const { error } = await db.from("ton_orders").insert({
+      id: crypto.randomUUID(),
       user_id: session.userId,
       amount,
       comment,

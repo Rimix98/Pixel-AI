@@ -65,7 +65,7 @@ create table if not exists public.artifacts (
 );
 
 create table if not exists public.ton_orders (
-  id text primary key,
+  id text primary key default gen_random_uuid()::text,
   user_id text not null references public.users(id) on delete cascade,
   amount real not null,
   comment text unique not null,
