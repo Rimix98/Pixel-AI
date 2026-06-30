@@ -88,9 +88,16 @@ export function Sidebar() {
 
   const isActive = (href: string) => pathname === href;
 
-  const filteredConversations = searchQuery.trim()
-    ? conversations.filter((c) => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
-    : conversations;
+  const chatConversations = conversations.filter((c) => c.model !== "design");
+  const designConversations = conversations.filter((c) => c.model === "design");
+
+  const filteredChat = searchQuery.trim()
+    ? chatConversations.filter((c) => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    : chatConversations;
+
+  const filteredDesigns = searchQuery.trim()
+    ? designConversations.filter((c) => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    : designConversations;
 
   return (
     <>
@@ -184,34 +191,54 @@ export function Sidebar() {
           <div className="mt-6">
             <div className="flex items-center justify-between px-3 mb-1">
               <p className="text-[11px] font-medium text-[var(--text-muted)] uppercase tracking-wider">
-                Недавние
+                Недавние чаты
               </p>
-              <button
-                onClick={() => setShowRecents(!showRecents)}
-                className="w-6 h-6 flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors cursor-pointer"
-              >
-                <SlidersHorizontal size={12} />
-              </button>
             </div>
 
-            {showRecents && (
-              <div className="space-y-0.5">
-                {loading ? (
-                  <div className="flex items-center justify-center py-6">
-                    <div className="w-4 h-4 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : filteredConversations.length === 0 ? (
-                  <p className="px-3 py-4 text-[12px] text-[var(--text-muted)]">
-                    {searchQuery ? "Ничего не найдено" : "Пока нет чатов"}
-                  </p>
-                ) : (
-                  filteredConversations.map((conv) => (
+            <div className="space-y-0.5">
+              {loading ? (
+                <div className="flex items-center justify-center py-6">
+                  <div className="w-4 h-4 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : filteredChat.length === 0 ? (
+                <p className="px-3 py-2 text-[12px] text-[var(--text-muted)]">
+                  {searchQuery ? "Ничего не найдено" : "Пока нет чатов"}
+                </p>
+              ) : (
+                filteredChat.slice(0, 8).map((conv) => (
+                  <Link
+                    key={conv.id}
+                    href={`/chat/${conv.id}`}
+                    className="group flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[var(--border)] transition-colors cursor-pointer"
+                  >
+                    <MessageSquare size={14} className="text-[var(--text-muted)] flex-shrink-0" />
+                    <span className="flex-1 text-[13px] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] truncate transition-colors">
+                      {conv.title}
+                    </span>
+                    <button
+                      onClick={(e) => handleDeleteConversation(conv.id, e)}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/10 text-[var(--text-muted)] hover:text-red-500 transition-all cursor-pointer"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </Link>
+                ))
+              )}
+            </div>
+
+            {filteredDesigns.length > 0 && (
+              <>
+                <p className="text-[11px] font-medium text-[var(--text-muted)] uppercase tracking-wider px-3 mt-4 mb-1">
+                  Дизайны
+                </p>
+                <div className="space-y-0.5">
+                  {filteredDesigns.slice(0, 5).map((conv) => (
                     <Link
                       key={conv.id}
-                      href={`/chat/${conv.id}`}
+                      href={`/design?id=${conv.id}`}
                       className="group flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[var(--border)] transition-colors cursor-pointer"
                     >
-                      <MessageSquare size={14} className="text-[var(--text-muted)] flex-shrink-0" />
+                      <Layers size={14} className="text-[var(--text-muted)] flex-shrink-0" />
                       <span className="flex-1 text-[13px] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] truncate transition-colors">
                         {conv.title}
                       </span>
@@ -222,9 +249,9 @@ export function Sidebar() {
                         <Trash2 size={12} />
                       </button>
                     </Link>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </nav>

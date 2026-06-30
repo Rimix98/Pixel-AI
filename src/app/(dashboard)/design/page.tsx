@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Send, Download, Sparkles, Code, Eye, Copy, Check, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -17,6 +18,10 @@ export default function DesignPage() {
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<"preview" | "code">("preview");
   const [copied, setCopied] = useState(false);
+  const [convId, setConvId] = useState<string | null>(null);
+  const [designs, setDesigns] = useState<Array<{ id: string; title: string; updated_at: string }>>([]);
+  const [activeDesign, setActiveDesign] = useState<string | null>(null);
+  const searchParams = useSearchParams();
   const previewRef = useRef<HTMLIFrameElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -34,12 +39,69 @@ export default function DesignPage() {
     previewRef.current.src = URL.createObjectURL(blob);
   }, [html]);
 
+  useEffect(() => {
+    fetch("/api/conversations")
+      .then((r) => r.json())
+      .then((data) => {
+        setDesigns(data.filter((c: any) => c.model === "design"));
+      })
+      .catch(() => {});
+
+    const id = searchParams.get("id");
+    if (id) {
+      loadDesign(id);
+    }
+  }, [searchParams]);
+
+  const loadDesign = async (id: string) => {
+    const res = await fetch(`/api/conversations/${id}`);
+    if (!res.ok) return;
+    const msgs = await res.json();
+    const userMsgs = msgs.filter((m: any) => m.role === "user");
+    const assistantMsgs = msgs.filter((m: any) => m.role === "assistant");
+    setMessages(msgs.map((m: any) => ({ role: m.role, content: m.content })));
+    setConvId(id);
+    setActiveDesign(id);
+    if (assistantMsgs.length > 0) {
+      const last = assistantMsgs[assistantMsgs.length - 1].content;
+      const cleaned = last.replace(/```html\n?/g, "").replace(/```\n?/g, "").trim();
+      if (cleaned.includes("<!DOCTYPE") || cleaned.includes("<html")) {
+        setHtml(cleaned);
+      }
+    }
+  };
+
+  const newDesign = () => {
+    setMessages([]);
+    setHtml("");
+    setConvId(null);
+    setActiveDesign(null);
+  };
+
   const handleSend = async () => {
     if (!prompt.trim() || loading) return;
     const userMsg = prompt.trim();
     setPrompt("");
     setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
     setLoading(true);
+
+    let conversationId = convId;
+    if (!conversationId) {
+      try {
+        const res = await fetch("/api/conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: userMsg.slice(0, 50), model: "design" }),
+        });
+        if (res.ok) {
+          const conv = await res.json();
+          conversationId = conv.id;
+          setConvId(conversationId);
+          setActiveDesign(conversationId);
+          setDesigns((prev) => [{ id: conv.id, title: conv.title, updated_at: conv.updated_at }, ...prev]);
+        }
+      } catch {}
+    }
 
     const systemPrompt = `You are Pixel Design AI. Generate complete, production-ready HTML/CSS websites based on user descriptions.
 
@@ -67,7 +129,7 @@ RULES:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: allMessages.map((m) => ({ role: m.role, content: m.content })),
-          conversationId: crypto.randomUUID(),
+          conversationId: conversationId || crypto.randomUUID(),
         }),
       });
 
