@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Plus, ChevronDown, Lock, Mic, Sparkles, PenLine, GraduationCap, Coffee, Code, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { getGreetingTemplate, renderGreeting } from "@/lib/greeting";
 import { canUseModel } from "@/lib/constants";
@@ -23,6 +24,7 @@ const suggestions = [
 
 export default function ChatPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [greeting, setGreeting] = useState("");
@@ -56,20 +58,47 @@ export default function ChatPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!input.trim() && !imagePreview) || isLoading) return;
+
+    const conversationId = crypto.randomUUID();
+    const messageContent = input.trim() || "Проанализируй это изображение";
     setIsLoading(true);
     try {
       const res = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: (input || "Анализ изображения").slice(0, 50) }),
+        body: JSON.stringify({
+          id: conversationId,
+          title: messageContent.slice(0, 50),
+        }),
       });
-      if (res.ok) {
-        const conv = await res.json();
-        if (input.trim()) sessionStorage.setItem("pendingMessage", input.trim());
-        if (imagePreview) sessionStorage.setItem("pendingImage", imagePreview);
-        window.location.href = `/chat/${conv.id}`;
-        return;
+
+      if (!res.ok) {
+        throw new Error("Failed to create conversation");
       }
+
+      const chatResponse = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversationId,
+          messages: [
+            {
+              role: "user",
+              content: messageContent,
+              ...(imagePreview ? { image: imagePreview } : {}),
+            },
+          ],
+        }),
+      });
+
+      if (!chatResponse.ok) {
+        const errData = await chatResponse.json().catch(() => ({}));
+        throw new Error(errData.error || errData.details || "Failed to get response");
+      }
+
+      await chatResponse.text();
+      router.push(`/chat/${conversationId}`);
+      return;
     } catch {}
     setIsLoading(false);
   };
