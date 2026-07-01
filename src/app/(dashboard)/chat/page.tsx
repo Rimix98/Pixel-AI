@@ -182,7 +182,7 @@ src={isSmiling ? "/smileyMascot.png" : "/mascot.png"}
       </div>
 
       {/* Input - fixed at bottom on mobile */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-4 pt-2 bg-[var(--bg-main)] z-10 md:static md:bg-transparent">
+      <div className="fixed bottom-0 left-0 right-0 px-4 pt-2 bg-[var(--bg-main)] z-10 md:static md:bg-transparent" style={{ paddingBottom: `calc(1rem + env(safe-area-inset-bottom))` }}>
         <div className="w-full max-w-2xl mx-auto">
           <form onSubmit={handleSubmit}>
             <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-3 md:p-4">

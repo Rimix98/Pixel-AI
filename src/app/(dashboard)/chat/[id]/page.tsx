@@ -388,7 +388,7 @@ export default function ChatConversationPage({ params }: { params: Promise<{ id:
       </div>
 
       {/* Input - fixed at bottom on mobile */}
-      <div className="fixed bottom-0 left-0 right-0 px-3 md:px-4 pb-3 md:pb-4 pt-2 bg-[var(--bg-main)] z-10 md:static md:bg-transparent">
+      <div className="fixed bottom-0 left-0 right-0 px-3 md:px-4 pt-2 bg-[var(--bg-main)] z-10 md:static md:bg-transparent" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
           <div className="bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border)] p-3 md:p-4">
             {imagePreview && (
