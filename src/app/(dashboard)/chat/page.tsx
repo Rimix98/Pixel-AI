@@ -44,6 +44,13 @@ export default function ChatPage() {
     setMounted(true);
   }, []);
 
+  // Reset textarea height when input is cleared
+  useEffect(() => {
+    if (!input && inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
+  }, [input]);
+
   useEffect(() => {
     if (greetingRef.current) {
       setGreeting(renderGreeting(greetingRef.current, user?.full_name));
@@ -200,9 +207,14 @@ src={isSmiling ? "/smileyMascot.png" : "/mascot.png"}
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onInput={(e) => {
+                  const el = e.currentTarget;
+                  el.style.height = "auto";
+                  el.style.height = Math.min(el.scrollHeight, 200) + "px";
+                }}
                 placeholder={imagePreview ? "Опишите изображение..." : "Чем могу помочь?"}
                 disabled={isLoading}
-                className="w-full bg-transparent text-[var(--text-primary)] placeholder-[var(--text-muted)] resize-none outline-none text-base min-h-[40px]"
+                className="w-full bg-transparent text-[var(--text-primary)] placeholder-[var(--text-muted)] resize-none outline-none text-base min-h-[40px] max-h-[200px] overflow-y-auto"
                 rows={1}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
