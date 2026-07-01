@@ -30,9 +30,9 @@ function stripClosingTags(input: string): string {
 // Encode any XML-like tags in user input to prevent tag injection
 function encodeUserInput(input: string): string {
   return input
+    .replace(/&/g, "&amp;")  // must be FIRST
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/&/g, "&amp;");
+    .replace(/>/g, "&gt;");
 }
 
 // ─── System Prompt (hardened) ─────────────────────────────────
@@ -87,11 +87,15 @@ async function callLlm(
     messages,
     stream,
     temperature: 0.3,
-    max_tokens: MAX_RESPONSE_TOKENS,
   };
 
-  // Force JSON response format for Groq (supported models)
-  if (PROVIDER === "groq") {
+  // Force JSON response format for Groq (only supported models)
+  const JSON_MODELS = new Set([
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+    "qwen/qwen3.6-27b",
+    "openai/gpt-oss-120b",
+  ]);
+  if (PROVIDER === "groq" && JSON_MODELS.has(model)) {
     body.response_format = { type: "json_object" };
   }
 
