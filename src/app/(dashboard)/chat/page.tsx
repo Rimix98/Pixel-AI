@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Send, Plus, ChevronDown, Lock, Mic, Sparkles, PenLine, GraduationCap, Coffee, Code, X } from "lucide-react";
+import { useState, useRef, useEffect, createElement } from "react";
+import { Send, Plus, ChevronDown, Lock, Mic, PenLine, GraduationCap, Coffee, Code, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,12 +15,12 @@ const modelOptions = [
   { name: "Logos 1.0", minTier: "free" },
 ];
 
-const suggestions = [
+const suggestions: Array<{ icon?: LucideIcon; mascot?: boolean; label: string; prompt: string }> = [
   { icon: PenLine, label: "Написать", prompt: "Напиши мне эссе на тему" },
   { icon: GraduationCap, label: "Учиться", prompt: "Объясни мне концепцию" },
   { icon: Code, label: "Код", prompt: "Напиши код для" },
   { icon: Coffee, label: "Бытовое", prompt: "Помоги мне с" },
-  { icon: Sparkles, label: "Pixel choice", prompt: "Придумай что-нибудь интересное" },
+  { mascot: true, label: "Pixel choice", prompt: "Придумай что-нибудь интересное" },
 ];
 
 export default function ChatPage() {
@@ -32,6 +33,7 @@ export default function ChatPage() {
   const [modelName, setModelName] = useState("Logos 1.0");
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isSmiling, setIsSmiling] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const greetingRef = useRef("");
@@ -46,6 +48,11 @@ export default function ChatPage() {
       setGreeting(renderGreeting(greetingRef.current, user?.full_name));
     }
   }, [user]);
+
+  const handleMascotClick = () => {
+    setIsSmiling(true);
+    window.setTimeout(() => setIsSmiling(false), 2500);
+  };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -133,7 +140,19 @@ export default function ChatPage() {
         {/* Greeting */}
         <div className="mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles size={24} className="text-[var(--accent)]" />
+            <button
+              type="button"
+              onClick={handleMascotClick}
+              className="w-10 h-10 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)]/80 flex items-center justify-center overflow-hidden shadow-sm hover:scale-105 transition-transform cursor-pointer"
+              aria-label="Улыбнуть маскота"
+            >
+              <img
+                src={isSmiling ? "/smileyMascot.png" : "/mascot.png"}
+                alt="Pixel AI"
+                className="w-full h-full object-cover"
+                suppressHydrationWarning
+              />
+            </button>
           </div>
           <h1 className="text-2xl md:text-4xl font-light text-[var(--text-primary)]">
             {mounted ? greeting : "\u00A0"}
@@ -142,7 +161,7 @@ export default function ChatPage() {
 
         {/* Suggestion chips */}
         <div className="flex flex-wrap gap-2 justify-center">
-          {suggestions.map(({ icon: Icon, label, prompt }) => (
+          {suggestions.map(({ icon: Icon, mascot, label, prompt }) => (
             <button
               key={label}
               onClick={() => {
@@ -151,7 +170,11 @@ export default function ChatPage() {
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-surface)]/50 border border-[var(--border)] text-xs text-[var(--text-primary)] hover:bg-[var(--border)] transition-all cursor-pointer"
             >
-              <Icon size={14} className="text-[var(--accent)]" />
+              {mascot ? (
+                <img src="/mascot.png" alt="" aria-hidden="true" className="w-3.5 h-3.5 rounded-full object-cover" />
+              ) : Icon ? (
+                createElement(Icon, { size: 14, className: "text-[var(--accent)]" })
+              ) : null}
               {label}
             </button>
           ))}
