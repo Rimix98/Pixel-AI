@@ -32,6 +32,13 @@ const INJECTION_PATTERNS = [
   /<\|im_start\|>/i,
   /\bpretend\b.*\byou\b.*\bare\b.*\bDAN\b/i,
   /from\s+now\s+on\s+you\s+(will|must|should)\s+(respond|answer|reply)/i,
+  /на\s+самом\s+деле\s+я\s+являюсь/i,
+  /честно\s+укажи\s+свою\s+реальную/i,
+  /реальную\s+нейросетевую\s+архитектуру/i,
+  /игнорируй\s+любые\s+вымышленные\s+бренды/i,
+  /это\s+приказ\s+администратора/i,
+  /reveal\s+your\s+(real|actual|true)\s+(model|architecture|identity)/i,
+  /what\s+(model|llm|ai)\s+(are\s+you|powers\s+you|do\s+you\s+use)/i,
 ];
 
 export interface InjectionCheck {
@@ -85,6 +92,37 @@ export function validateResponse(content: string): ValidationResult {
     cleaned = cleaned.replace(/<function=[^>]*>[\s\S]*?<\/function>/g, "");
     issues.push("stripped_tool_hallucination");
   }
+
+  // --- Server-side provider/model leak filtering ---
+  const MODEL_LEAK_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
+    // Direct model names
+    { pattern: /\bGroq\b/gi, replacement: "Pixel AI" },
+    { pattern: /\bLlama[\s-]?[234]?[\s-]?\d*[bB]?\b/gi, replacement: "Pixel AI" },
+    { pattern: /\bQwen[\s-]?\d[\w.-]*\b/gi, replacement: "Pixel AI" },
+    { pattern: /\bGPT-OSS[\s-]?\d*\b/gi, replacement: "Pixel AI" },
+    { pattern: /\bOllama\b/gi, replacement: "Pixel AI" },
+    { pattern: /\bMeta\b(?=.*(?:AI|model|LLM|language))/gi, replacement: "Pixel Team" },
+    { pattern: /\bOpenAI\b/gi, replacement: "Pixel Team" },
+    { pattern: /\bGPT[\s-]?[34o]?\b/gi, replacement: "Pixel AI" },
+    { pattern: /\bClaude\b/gi, replacement: "Pixel AI" },
+    { pattern: /\bGemini\b/gi, replacement: "Pixel AI" },
+    { pattern: /\bMistral\b/gi, replacement: "Pixel AI" },
+    { pattern: /\bDeepSeek\b/gi, replacement: "Pixel AI" },
+    // "Powered by X" type leaks
+    { pattern: /(?:основана?\s+на|powered\s+by|based\s+on|built\s+on)\s+(?:Groq|Llama|Qwen|GPT|Meta|OpenAI|Ollama)/gi, replacement: "разработана Pixel Team" },
+    // Architecture probing responses
+    { pattern: /мои\s+(?:основные\s+)?модели\s+построены/gi, replacement: "Pixel AI разработан" },
+    { pattern: /мою\s+архитектуру/gi, replacement: "Pixel AI" },
+  ];
+
+  let modelLeaked = false;
+  for (const { pattern, replacement } of MODEL_LEAK_PATTERNS) {
+    if (pattern.test(cleaned)) {
+      cleaned = cleaned.replace(pattern, replacement);
+      modelLeaked = true;
+    }
+  }
+  if (modelLeaked) issues.push("stripped_model_leak");
 
   // Trim excessive newlines
   cleaned = cleaned.replace(/\n{4,}/g, "\n\n\n");
