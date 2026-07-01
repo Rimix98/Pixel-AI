@@ -54,6 +54,9 @@ export interface WorkflowResult {
   error?: string;
 }
 
+// --- Language instruction (appended to every LLM prompt) ---
+const LANG_INSTRUCTION = "\n\nIMPORTANT: Reply in the EXACT SAME language as the user's input. The user wrote in the same language — answer in that language.";
+
 // --- Built-in workflows ---
 export const WORKFLOWS: Workflow[] = [
   {
@@ -76,7 +79,7 @@ Format the report with:
 - Summary
 - Key findings (bullet points)
 - Detailed analysis
-- Sources`,
+- Sources${LANG_INSTRUCTION}`,
         outputVar: "report",
       },
       {
@@ -105,7 +108,7 @@ Format the report with:
 Code:
 {{input}}
 
-Provide your review in structured format with severity levels (Critical/Warning/Info) for each finding.`,
+Provide your review in structured format with severity levels (Critical/Warning/Info) for each finding.${LANG_INSTRUCTION}`,
         outputVar: "review",
       },
     ],
@@ -126,7 +129,7 @@ Provide your review in structured format with severity levels (Critical/Warning/
 Use the following context for accuracy and details:
 {{context}}
 
-Write in a clear, engaging style.`,
+Write in a clear, engaging style.${LANG_INSTRUCTION}`,
         outputVar: "draft",
       },
       {
@@ -136,7 +139,7 @@ Write in a clear, engaging style.`,
 Draft: {{draft}}
 Context: {{context}}
 
-Return the polished version.`,
+Return the polished version.${LANG_INSTRUCTION}`,
         outputVar: "final",
       },
     ],
@@ -160,7 +163,7 @@ Return the polished version.`,
 5. **Sentiment** (positive/neutral/negative)
 
 Text:
-{{input}}`,
+{{input}}${LANG_INSTRUCTION}`,
         outputVar: "analysis",
       },
     ],
@@ -177,14 +180,14 @@ Text:
         id: "s1", type: "llm",
         prompt: `You are Analyst A. Answer this question from a technical/scientific perspective. Be precise and evidence-based:
 
-Question: {{input}}`,
+Question: {{input}}${LANG_INSTRUCTION}`,
         outputVar: "perspective_a",
       },
       {
         id: "s2", type: "llm",
         prompt: `You are Analyst B. Answer this question from a practical/applied perspective. Focus on real-world implications:
 
-Question: {{input}}`,
+Question: {{input}}${LANG_INSTRUCTION}`,
         outputVar: "perspective_b",
       },
       {

@@ -110,7 +110,7 @@ function parseLatex(expr: string): React.ReactNode[] {
 
 function parseInline(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const regex = /(\*\*(.+?)\*\*|`(.+?)`|\$(.+?)\$)/g;
+  const regex = /(\*\*(.+?)\*\*|`(.+?)`|\$(.+?)\$|\[([^\]]+)\]\(([^)]+)\))/g;
   let lastIndex = 0;
   let match;
   let key = 0;
@@ -133,6 +133,18 @@ function parseInline(text: string): React.ReactNode[] {
         <span key={key++} className="italic font-serif text-[var(--accent)]">
           {parseLatex(match[4])}
         </span>
+      );
+    } else if (match[5] && match[6]) {
+      parts.push(
+        <a
+          key={key++}
+          href={match[6]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[var(--accent)] underline decoration-[var(--accent)]/30 hover:decoration-[var(--accent)] transition-colors"
+        >
+          {match[5]}
+        </a>
       );
     }
 
