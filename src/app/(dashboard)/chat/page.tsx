@@ -136,7 +136,7 @@ export default function ChatPage() {
       />
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-end text-center px-4 pb-24 md:pb-0">
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-4 -mt-16 md:-mt-20">
         {/* Greeting */}
         <div className="mb-4">
           <div className="flex items-center justify-center gap-2 mb-2">
