@@ -1,12 +1,13 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-const secretValue = process.env.JWT_SECRET;
-if (!secretValue) {
-  throw new Error("[Auth] FATAL: JWT_SECRET must be set. Add it to .env.local.");
+function getSecret() {
+  const secretValue = process.env.JWT_SECRET;
+  if (!secretValue) {
+    throw new Error("[Auth] FATAL: JWT_SECRET must be set. Add it to .env.local.");
+  }
+  return new TextEncoder().encode(secretValue);
 }
-
-const SECRET = new TextEncoder().encode(secretValue);
 
 export interface SessionPayload {
   userId: string;
@@ -14,11 +15,12 @@ export interface SessionPayload {
 }
 
 export async function createSession(userId: string, email: string) {
+  const secret = getSecret();
   const token = await new SignJWT({ userId, email })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(SECRET);
+    .sign(secret);
 
   const cookieStore = await cookies();
   cookieStore.set("session", token, {
@@ -34,11 +36,12 @@ export async function createSession(userId: string, email: string) {
 
 export async function getSession(): Promise<SessionPayload | null> {
   try {
+    const secret = getSecret();
     const cookieStore = await cookies();
     const token = cookieStore.get("session")?.value;
     if (!token) return null;
 
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, secret);
     return payload as unknown as SessionPayload;
   } catch {
     return null;
